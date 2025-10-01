@@ -7,6 +7,9 @@ import pyaudio
 import wave
 import time
 import shutil
+from colorama import Fore, init
+
+init(autoreset=True)
 
 parser = argparse.ArgumentParser(
     description="Transcribe audio files using Whisper model."
@@ -30,10 +33,10 @@ parser.add_argument(
     help="Whether to print verbose output during transcription",
 )
 args = parser.parse_args()
-print("current dir = " + args.output_dir)
-print("model size = " + args.model_size)
-print("language = " + args.language)
-print("verbose = " + str(args.verbose))
+print(Fore.CYAN + "current dir = " + args.output_dir)
+print(Fore.CYAN + "model size = " + args.model_size)
+print(Fore.CYAN + "language = " + args.language)
+print(Fore.CYAN + "verbose = " + str(args.verbose))
 
 
 # def save_uploaded_file(uploaded_file, save_path):
@@ -45,9 +48,9 @@ def load_whisper_model(model_size=args.model_size):
     return whisper.load_model(model_size)
 
 
-print(f"Loading Whisper model ({args.model_size})...")
+print(Fore.YELLOW + f"Loading Whisper model ({args.model_size})...")
 model = load_whisper_model()
-print("Model loaded successfully!\n")
+print(Fore.GREEN + "Model loaded successfully!\n")
 
 
 def transcribe_audio(file_path, language="en", verbose=args.verbose):
@@ -58,7 +61,7 @@ def transcribe_audio(file_path, language="en", verbose=args.verbose):
 
 
 def transcriptZaWarudo():
-    print("Transcription function called.")
+    print(Fore.MAGENTA + "Transcription function called.")
     from pathlib import Path
 
     uploaded_files = [
@@ -67,20 +70,20 @@ def transcriptZaWarudo():
         if Path(files).suffix in [".mp3", ".wav", ".m4a"]
     ]
 
-    print(f"Found {len(uploaded_files)} audio files: {uploaded_files}")
+    print(Fore.CYAN + f"Found {len(uploaded_files)} audio files: {uploaded_files}")
 
     if not uploaded_files:
       try:
-        print("No audio files found in the input directory.")
-        print("Checking current directory for audio files...")
+        print(Fore.YELLOW + "No audio files found in the input directory.")
+        print(Fore.YELLOW + "Checking current directory for audio files...")
         uploaded_files = [
           files
           for files in Path("./Recordings/").iterdir()
             if (files).suffix in [".mp3", ".wav", ".m4a"]
         ] 
       except:
-        print("Input directory not found.")
-        print("No audio files found in the current directory.")
+        print(Fore.RED + "Input directory not found.")
+        print(Fore.RED + "No audio files found in the current directory.")
         return
 
     else:
@@ -88,25 +91,25 @@ def transcriptZaWarudo():
             save_path = "./Recordings/"  # Directory to save transcriptions
             os.makedirs(save_path, exist_ok=True)
 
-            print(f"\n[{idx}/{len(uploaded_files)}] Transcribing {uploaded_file.name}...")
+            print(Fore.YELLOW + f"\n[{idx}/{len(uploaded_files)}] Transcribing {uploaded_file.name}...")
             transcribed_text = transcribe_audio(
                 str(uploaded_file), language=args.language, verbose=args.verbose
             )
             output_file = os.path.join(args.output_dir, uploaded_file.stem + ".txt")
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write(transcribed_text)
-            print(f"✓ Saved to {output_file}")
+            print(Fore.GREEN + f"✓ Saved to {output_file}")
 
 
 def main():
-    print("Press 'T' to start Record...")
-    print("Press 'X' to exit.")
+    print(Fore.GREEN + "Press 'T' to start Record...")
+    print(Fore.RED + "Press 'X' to exit.")
     while True:
         try:
             is_Recording = True
             if (keyboard.is_pressed("t")):  # if key 't' is pressed
-                print("'T' key pressed. Starting Recording...")
-                print("Press 'P' to stop Record...")
+                print(Fore.GREEN + "'T' key pressed. Starting Recording...")
+                print(Fore.YELLOW + "Press 'P' to stop Record...")
                 #   THERE WE GO FOR THE RECORDING
                 os.makedirs("Recordings", exist_ok=True)
                 CHUNK = 1024  # Record in chunks of 1024 samples
@@ -122,10 +125,10 @@ def main():
 
                   data = stream.read(CHUNK)
                   frames.append(data)
-                  sys.stdout.write(f"\rRecording... {len(frames)} chunks ({len(frames) * CHUNK / 44100:.1f}s)")
+                  sys.stdout.write(Fore.CYAN + f"\rRecording... {len(frames)} chunks ({len(frames) * CHUNK / 44100:.1f}s)")
                   sys.stdout.flush()
                   if keyboard.is_pressed("p"):  # if key 't' is pressed
-                      print("\n'P' key pressed. Stopping Recording...")
+                      print(Fore.YELLOW + "\n'P' key pressed. Stopping Recording...")
                       is_Recording = False
                       # stop and close the stream
                     
@@ -135,7 +138,7 @@ def main():
                 #save the recorded file
                 date_time = time.strftime("%Y%m%d-%H%M%S")
                 name = "recording_"+date_time+".wav"
-                print(f"Saving recording as {name}...")
+                print(Fore.YELLOW + f"Saving recording as {name}...")
                 wf = wave.open(name, 'wb')
                 wf.setnchannels(1)
                 wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
@@ -143,15 +146,15 @@ def main():
                 wf.writeframes(b''.join(frames))
                 wf.close()
                 shutil.move(name, "./Recordings/"+name)
-                print(f"✓ Recording saved to ./Recordings/{name}")
+                print(Fore.GREEN + f"✓ Recording saved to ./Recordings/{name}")
                 # THERE WE GO FOR THE TRANSCRIPTION
-                print("Transcription started...")
+                print(Fore.MAGENTA + "Transcription started...")
                 transcriptZaWarudo()
-                print("Transcription finished.")
+                print(Fore.GREEN + "Transcription finished.")
                 break  # exit the loop after transcription
 
             if keyboard.is_pressed("x"):  # if key 't' is pressed
-                print("'x' key pressed. aborting transcription...")
+                print(Fore.RED + "'x' key pressed. aborting transcription...")
                 break  # exit the loop after transcription
         except:
             break  # if user presses a key other than the given key the loop will break
