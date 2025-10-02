@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(
     description="Transcribe audio files using Whisper model."
 )
 parser.add_argument(
-    "--model_size", type=str, default="base", help="Size of the Whisper Model"
+    "--model_size", type=str, default="small", help="Size of the Whisper Model: tiny, base, small, medium, large"
 )
 parser.add_argument(
     "--language", type=str, default="en", help="Language of the audio file"
@@ -34,20 +34,17 @@ parser.add_argument(
 )
 parser.add_argument(
     "--verbose",
-    type=bool,
-    default=False,
+    action=argparse.BooleanOptionalAction,
     help="Whether to print verbose output during transcription",
 )
 parser.add_argument(
     "--auto_transcribe_ALL",
-    type=bool,
-    default=False,
+    action= argparse.BooleanOptionalAction,
     help="Whether to automatically transcribe all files in the input directory",
 )
 parser.add_argument(
     "--auto_transcribe",
-    type=bool,
-    default=True,
+    action=argparse.BooleanOptionalAction,
     help="Whether to automatically transcribe after recording",
 )
 args = parser.parse_args()
@@ -72,6 +69,10 @@ def load_whisper_model(model_size=args.model_size):
 print(Fore.YELLOW + f"Loading Whisper model ({args.model_size})...")
 model = load_whisper_model()
 print(Fore.GREEN + "Model loaded successfully!\n")
+
+# Create directories if they don't exist
+os.makedirs(args.input_dir, exist_ok=True)
+os.makedirs(args.output_dir, exist_ok=True)
 
 
 def transcribe_audio(file_path, language="en", verbose=args.verbose):
@@ -109,7 +110,7 @@ def transcriptZaWarudo():
 
     else:
         for idx, uploaded_file in enumerate(uploaded_files, 1):
-            save_path = "./Recordings/"  # Directory to save transcriptions
+            save_path = "./Transcriptions/"  # Directory to save transcriptions
             os.makedirs(save_path, exist_ok=True)
 
             print(
@@ -203,17 +204,15 @@ def main():
                 wf.close()
                 shutil.move(name, "./Recordings/" + name)
                 print(Fore.GREEN + f"✓ Recording saved to ./Recordings/{name}")
-                    
-                printHelp()
                 
                 if args.auto_transcribe_ALL:
                     # THERE WE GO FOR THE TRANSCRIPTION FOR ALL
                     launchTranscriptionForAll()
-                    break  # exit the loop after transcription
                 if args.auto_transcribe:
                     # THERE WE GO FOR THE TRANSCRIPTION
                     transcriptOneFile(name)
-                    break  # exit the loop after transcription
+                    
+                printHelp()
                     
                 
 
@@ -285,8 +284,10 @@ def main():
                 printHelp()
             if keyboard.is_pressed("x"):  # if key 'x' is pressed
                 print(Fore.RED + "'x' key pressed. aborting anything (even my life)...")
+                keyboard.unhook_all() # clean keyboard shenanigans
                 sys.exit(0)  # terminate the program immediately
         except:
+            keyboard.unhook_all() # clean keyboard shenanigans
             break
 
 def launchTranscriptionForAll():
@@ -311,4 +312,9 @@ def printHelp():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        keyboard.unhook_all() # clean keyboard shenanigans
+        print(Fore.RED + "\nExiting... Goodbye!")
+        sys.exit(0)  # terminate the program immediately
