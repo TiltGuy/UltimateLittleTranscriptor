@@ -1,4 +1,6 @@
 openai-whisper
-keyboard
+pynput
+pygetwindow
 pyaudio
 colorama
+tqdm
