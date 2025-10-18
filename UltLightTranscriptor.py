@@ -108,19 +108,19 @@ def on_key_press(key):
 
 
 ## Remove key from the set when released
-def on_key_release(key):
-    try:
-        if hasattr(key, "char"):
-            print("DEBUG: " + key.char + "  discarded!")
-            pressed_keys.discard(key.char)
-    except AttributeError:
-        pass
+# def on_key_release(key):
+#     try:
+#         if hasattr(key, "char"):
+#             print("DEBUG: " + key.char + "  discarded!")
+#             pressed_keys.discard(key.char)
+#     except AttributeError:
+#         pass
 
 
 ## Linking the listener to the functions
 ## we add the on_press and on_release functions
 ## to be sure we track both events
-listener = keyboard.Listener(on_press=on_key_press, on_release=on_key_release)
+listener = keyboard.Listener(on_press=on_key_press)
 
 ## Start the listener in a separate thread
 ## So it doesn't block the main thread
@@ -336,6 +336,7 @@ def delete_transcriptions():
     while is_Deleting == True:
         try:
             if "y"in pressed_keys:   # if key 'y' is pressed
+                pressed_keys.discard("y")
                 if os.path.exists(args.output_dir):
                     ##Remove all files in the directory
                     for filename in os.listdir(args.output_dir):
@@ -347,6 +348,7 @@ def delete_transcriptions():
                     print(Fore.GREEN + "✓ All transcriptions deleted.")
                     is_Deleting = False
             if "n" in pressed_keys:  # if key 'n' is pressed
+                pressed_keys.discard("n")
                 print(Fore.RED + "Aborting deletion...")
                 is_Deleting = False
         except:
@@ -364,6 +366,7 @@ def delete_recording():
     while is_Deleting == True:
         try:
             if "y" in pressed_keys:  # if key 'y' is pressed
+                pressed_keys.discard("y")
                 if os.path.exists(args.input_dir):
                     ##Remove all files in the directory
                     for filename in os.listdir(args.input_dir):
@@ -379,6 +382,7 @@ def delete_recording():
                     print(Fore.GREEN + "✓ All Recordings deleted.")
                     is_Deleting = False
             if "n" in pressed_keys:  # if key 'n' is pressed
+                pressed_keys.discard("n")
                 print(Fore.RED + "Aborting deletion...")
                 is_Deleting = False
         except:
