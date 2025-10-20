@@ -10,6 +10,7 @@ from colorama import Fore, init
 import threading
 from pynput import keyboard
 import pygetwindow as gw
+import json
 
 init(autoreset=True)
 
@@ -52,6 +53,13 @@ parser.add_argument(
     action=argparse.BooleanOptionalAction,
     help="Whether to automatically transcribe after recording",
 )
+parser.add_argument(
+    "--output_format",
+    type=str,
+    default="txt",
+    help="Format of the output transcription file: txt, srt, vtt, json",
+)
+
 args = parser.parse_args()
 print(Fore.CYAN + "input dir = " + args.input_dir)
 print(Fore.CYAN + "current dir = " + args.output_dir)
@@ -60,6 +68,8 @@ print(Fore.CYAN + "language = " + args.language)
 print(Fore.CYAN + "verbose = " + str(args.verbose))
 print(Fore.CYAN + "auto Transcription for ALL = " + str(args.auto_transcribe_ALL))
 print(Fore.CYAN + "auto Transcription = " + str(args.auto_transcribe))
+print(Fore.CYAN + "Output Format = " + str(args.output_format))
+
 
 
 # def save_uploaded_file(uploaded_file, save_path):
@@ -145,9 +155,10 @@ os.makedirs(args.output_dir, exist_ok=True)
 
 def transcribe_audio(file_path, language="en", verbose=args.verbose):
     # transcribe the audio file using Whisper model specified language (or not hihihi)
+    if verbose is None:
+        verbose = False
     result = model.transcribe(file_path, language=language, verbose=verbose)
-    # TODO: handle json for timestamping later
-    return result["text"]
+    return result
 
 
 def transcriptZaWarudo():
@@ -188,9 +199,13 @@ def transcriptZaWarudo():
             transcribed_text = transcribe_audio(
                 str(uploaded_file), language=args.language, verbose=args.verbose
             )
-            output_file = os.path.join(args.output_dir, uploaded_file.stem + ".txt")
+            output_file = os.path.join(args.output_dir, uploaded_file.stem + "." + args.output_format)
+            ## Save in json
             with open(output_file, "w", encoding="utf-8") as f:
-                f.write(transcribed_text)
+                if args.output_format == "txt":
+                    f.write(transcribed_text["text"])
+                else:
+                    json.dump(transcribed_text,f, indent=2, ensure_ascii=False)
             print(Fore.GREEN + f"✓ Saved to {output_file}")
 
 
@@ -209,9 +224,12 @@ def transcriptOneFile(filename):
         str(uploaded_file), language=args.language, verbose=args.verbose
     )
 
-    output_file = os.path.join(args.output_dir, uploaded_file.stem + ".txt")
+    output_file = os.path.join(args.output_dir, uploaded_file.stem + "." + args.output_format)
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write(transcribed_text)
+        if args.output_format == "txt":
+                    f.write(transcribed_text["text"])
+        else:
+            json.dump(transcribed_text,f, indent=2, ensure_ascii=False)
     print(Fore.GREEN + f"✓ Saved to {output_file}")
 
 
