@@ -81,7 +81,6 @@ pressed_keys = set()
 is_processing = False  ## Flag to indicate if processing is ongoing
 last_activity_time = time.time()  ## Timestamp of the last
 IDLE_TIMEOUT = 120  ## 2 minutes of inactivity before auto-exit
-current_ult_window = gw.getActiveWindow()
 
 
 ## FUNCTION TO CHECK IF THE CONSOLE IS FOCUSED
@@ -111,7 +110,6 @@ def on_key_press(key):
     try:
         if hasattr(key, "char") and not is_processing:
             last_activity_time = time.time()
-            print("DEBUG: " + key.char + "  detected!")
             pressed_keys.add(key.char)
     except AttributeError:
         pass
@@ -145,7 +143,12 @@ def load_whisper_model(model_size=args.model_size):
 
 
 print(Fore.YELLOW + f"Loading Whisper model ({args.model_size})...")
-model = load_whisper_model()
+if args.auto_transcribe_ALL or args.auto_transcribe:
+    print(
+        Fore.YELLOW
+        + "Auto transcription enabled. The model will be loaded now."
+    )
+    model = load_whisper_model()
 print(Fore.GREEN + "Model loaded successfully!\n")
 
 # Create directories if they don't exist
@@ -251,14 +254,12 @@ def main():
 
             ### RECORDING PART
             if "t" in pressed_keys:
-                print("DEBUG: 't' detected and console focused!")
                 ## remove preventing multiple trigger
                 pressed_keys.discard("t")
                 launch_recording(is_Recording)
 
             ### DELETION PART but just the transcriptions
             if "w" in pressed_keys:
-                print("DEBUG: 'w' detected and console focused!")
                 ## remove preventing multiple trigger
                 pressed_keys.discard("w")
                 delete_transcriptions()
@@ -358,7 +359,7 @@ def delete_transcriptions():
                 if os.path.exists(args.output_dir):
                     ##Remove all files in the directory
                     for filename in os.listdir(args.output_dir):
-                        if filename.endswith(".txt"):
+                        if filename.endswith(".txt") or filename.endswith(".srt") or filename.endswith(".vtt") or filename.endswith(".json"):
                             print(Fore.YELLOW + f"Deleting {filename}...")
                             os.remove(os.path.join(args.output_dir, filename))
                             THREAD_SLEEP = 0.1
@@ -410,6 +411,10 @@ def delete_recording():
 
 
 def launchTranscriptionForAll():
+    if model is None:
+        print(Fore.YELLOW + "Loading Whisper model...")
+        model = load_whisper_model()
+        print(Fore.GREEN + "Model loaded successfully!\n")
     print(Fore.MAGENTA + "Transcription started...")
     transcriptZaWarudo()
     print(Fore.GREEN + "Transcription finished.")
