@@ -141,15 +141,14 @@ listener.start()
 def load_whisper_model(model_size=args.model_size):
     return whisper.load_model(model_size)
 
-
-print(Fore.YELLOW + f"Loading Whisper model ({args.model_size})...")
+global model
+model = None
 if args.auto_transcribe_ALL or args.auto_transcribe:
     print(
         Fore.YELLOW
         + "Auto transcription enabled. The model will be loaded now."
     )
     model = load_whisper_model()
-print(Fore.GREEN + "Model loaded successfully!\n")
 
 # Create directories if they don't exist
 os.makedirs(args.input_dir, exist_ok=True)
@@ -411,6 +410,7 @@ def delete_recording():
 
 
 def launchTranscriptionForAll():
+    global model
     if model is None:
         print(Fore.YELLOW + "Loading Whisper model...")
         model = load_whisper_model()
